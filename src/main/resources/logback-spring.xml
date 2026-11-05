@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Standard Console Appender (human-readable) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%cyan(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) %yellow(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Active for all profiles except prod (default, dev, test, etc.) -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.chatops" level="DEBUG"/>
+        <logger name="org.springframework.web.socket" level="DEBUG"/>
+        <logger name="org.springframework.boot" level="INFO"/>
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+    </springProfile>
+
+    <!-- Production structured JSON logs -->
+    <springProfile name="prod">
+        <appender name="PROD_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","level":"%-5level","logger":"%logger{36}","thread":"%thread","message":"%replace(%msg){'"','\\'}"}%n</pattern>
+            </encoder>
+        </appender>
+        <root level="WARN">
+            <appender-ref ref="PROD_CONSOLE"/>
+        </root>
+        <logger name="com.chatops" level="INFO"/>
+    </springProfile>
+
+</configuration>

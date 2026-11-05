@@ -1,0 +1,67 @@
+services:
+
+  # ===== PostgreSQL =====
+  postgres:
+    image: postgres:16-alpine
+    container_name: chatops-postgres
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-chatops}
+      POSTGRES_USER:     ${DB_USER:-chatops}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-chatops_dev_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-chatops} -d ${DB_NAME:-chatops}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ===== Redis =====
+  redis:
+    image: redis:7-alpine
+    container_name: chatops-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ===== Spring Boot Application =====
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatops-app
+    env_file: .env
+    environment:
+      DB_HOST:    postgres
+      REDIS_HOST: redis
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
