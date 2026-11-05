@@ -10,8 +10,6 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20Alpine-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Interview Guide](https://img.shields.io/badge/Interview%20Guide-PDF%20Included-red?style=flat&logo=adobeacrobatreader&logoColor=white)](#-interview--technical-deep-dive-guide)
-
 ---
 
 ## ⚡ Executive Summary: Problems Solved
@@ -371,23 +369,6 @@ ChatOps/
 ├── LICENSE                     # MIT License
 └── README.md                   # Project documentation
 ```
-
----
-
-## 📘 Interview & Technical Deep Dive Guide
-
-A comprehensive, 30+ page senior engineering guide is included directly in the root of this repository:
-
-📄 **[`ChatOps_Comprehensive_Engineering_Report_and_Interview_Guide.pdf`](./ChatOps_Comprehensive_Engineering_Report_and_Interview_Guide.pdf)**
-
-### Key Highlights from the Guide:
-- **System Design Trade-Offs**: Why Redis Sorted Sets beat Heartbeat Tables; Why Keyset Pagination outperforms Offset Pagination.
-- **Deep Concurrency Analysis**: Proofs of zero race conditions across the 5 atomic Redis Lua scripts under high concurrency.
-- **High-Availability & Failover**: Database connection pooling tuning (HikariCP), Redis Sentinel/Cluster strategies, and WebSocket reconnect backoff.
-- **30+ Mock Interview Questions & Answers**: High-signal senior backend engineering questions designed specifically around this architecture.
-
----
-
 ## 📜 License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
