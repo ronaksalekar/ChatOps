@@ -3,8 +3,8 @@
 > **Real-time group chat backend** built with Java 25, Spring Boot, WebSockets/STOMP, JWT auth,
 > Redis presence tracking, cursor-paginated message history, rate limiting, Docker, and GitHub Actions CI/CD.
 
-[![CI](https://github.com/YOUR_USERNAME/chatops/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/chatops/actions/workflows/ci.yml)
-[![CD](https://github.com/YOUR_USERNAME/chatops/actions/workflows/cd.yml/badge.svg)](https://github.com/YOUR_USERNAME/chatops/actions/workflows/cd.yml)
+[![CI](https://github.com/ronaksalekar/ChatOps/actions/workflows/ci.yml/badge.svg)](https://github.com/ronaksalekar/ChatOps/actions/workflows/ci.yml)
+[![CD](https://github.com/ronaksalekar/ChatOps/actions/workflows/cd.yml/badge.svg)](https://github.com/ronaksalekar/ChatOps/actions/workflows/cd.yml)
 
 ---
 
