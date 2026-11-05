@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ChatOps - Real-Time Chat</title>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
@@ -24,17 +24,26 @@
       --danger: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg-dark); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
+    html, body {
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      width: 100%;
+    }
 
     /* Modals */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
       display: flex; align-items: center; justify-content: center; z-index: 1000;
+      padding: 16px;
     }
     .modal-card {
       background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 12px;
-      padding: 28px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
-      max-height: 85vh; display: flex; flex-direction: column;
+      padding: 24px; width: 100%; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      max-height: 85vh; max-height: 85dvh; display: flex; flex-direction: column; overflow-y: auto;
     }
     .modal-card h3 { font-size: 18px; margin-bottom: 16px; }
 
@@ -48,13 +57,14 @@
     .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; font-weight: 600; }
     .form-group input {
       width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 14px; outline: none;
+      border-radius: 8px; color: var(--text); font-size: 16px; outline: none;
     }
     .form-group input:focus { border-color: var(--accent); }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 10px 16px; background: var(--accent); border: none; border-radius: 8px;
       color: white; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px;
+      white-space: nowrap;
     }
     .btn:hover { background: var(--accent-hover); }
     .btn-secondary { background: #475569; }
@@ -63,19 +73,34 @@
     .btn-success:hover { background: #059669; }
     .btn-danger { background: none; border: 1px solid var(--danger); color: var(--danger); }
     .btn-danger:hover { background: var(--danger); color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 6px; }
     .btn-full { width: 100%; padding: 12px; }
     .auth-error { color: var(--danger); font-size: 13px; margin-top: 10px; text-align: center; display: none; }
 
     /* App Layout */
-    #app { display: none; width: 100%; height: 100%; }
+    #app {
+      display: none;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
     .sidebar {
-      width: 290px; background: var(--bg-sidebar); border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
+      width: 290px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
     }
     .sidebar-header {
-      padding: 16px; border-bottom: 1px solid var(--border); display: flex;
-      justify-content: space-between; align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .sidebar-header h2 { font-size: 18px; font-weight: 700; color: #fff; }
     .user-badge {
@@ -119,60 +144,214 @@
     .explore-list { overflow-y: auto; margin: 12px 0; max-height: 340px; display: flex; flex-direction: column; gap: 8px; }
     .explore-item {
       padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
+    .explore-info { min-width: 0; flex: 1; }
     .explore-info h4 { font-size: 14px; color: var(--text); font-weight: 600; }
     .explore-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
     .explore-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-    .joined-badge { font-size: 12px; color: var(--success); font-weight: 600; padding: 4px 8px; }
+    .joined-badge { font-size: 12px; color: var(--success); font-weight: 600; padding: 4px 8px; white-space: nowrap; }
 
     /* Main Chat Window */
-    .chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
-    .chat-header {
-      padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex;
-      justify-content: space-between; align-items: center; background: rgba(15,23,42,0.8);
+    .chat-container {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-chat);
+      height: 100%;
     }
-    .chat-header-info h3 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .chat-header-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-    .chat-header-actions { display: flex; gap: 10px; }
+    .chat-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15,23,42,0.9);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .chat-header-info {
+      min-width: 0;
+      flex: 1;
+    }
+    .chat-header-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-header-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-header-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .mobile-menu-btn:hover { background: var(--accent); color: white; }
+
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(2px);
+      z-index: 80;
+    }
 
     .messages-area {
-      flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
     }
     .empty-state {
       margin: auto; text-align: center; color: var(--text-muted); font-size: 14px;
     }
 
-    .msg { display: flex; flex-direction: column; max-width: 70%; word-break: break-word; }
+    .msg { display: flex; flex-direction: column; max-width: 72%; word-break: break-word; }
     .msg.mine { align-self: flex-end; align-items: flex-end; }
     .msg.other { align-self: flex-start; align-items: flex-start; }
     .msg-header { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
     .msg-bubble {
-      padding: 10px 16px; border-radius: 14px; font-size: 14px; line-height: 1.4;
+      padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4;
     }
     .msg.mine .msg-bubble { background: var(--bubble-mine); color: white; border-bottom-right-radius: 2px; }
     .msg.other .msg-bubble { background: var(--bubble-other); color: var(--text); border-bottom-left-radius: 2px; border: 1px solid var(--border); }
     .msg.system {
-      align-self: center; font-size: 12px; color: var(--system-msg); font-style: italic; margin: 6px 0;
+      align-self: center; font-size: 12px; color: var(--system-msg); font-style: italic; margin: 6px 0; text-align: center;
     }
 
     /* Typing Bar */
-    .typing-bar { height: 22px; padding: 0 24px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+    .typing-bar {
+      height: 22px;
+      padding: 0 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+      flex-shrink: 0;
+    }
 
     /* Input Bar */
     .chat-input-bar {
-      padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--bg-sidebar);
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      background: var(--bg-sidebar);
+      flex-shrink: 0;
     }
     .chat-input {
       flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px;
-      padding: 12px 16px; color: var(--text); font-size: 14px; outline: none;
+      padding: 12px 14px; color: var(--text); font-size: 16px; outline: none;
     }
     .chat-input:focus { border-color: var(--accent); }
     .send-btn {
       background: var(--accent); border: none; border-radius: 8px; color: white;
-      padding: 0 24px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+      padding: 0 20px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+      flex-shrink: 0;
     }
     .send-btn:hover { background: var(--accent-hover); }
+
+    /* ==============================================================
+       Mobile Layout (< 768px)
+       ============================================================== */
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 82vw;
+        max-width: 310px;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.7);
+      }
+      .sidebar-backdrop.active {
+        display: block;
+      }
+      .chat-header {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .chat-header-info h3 {
+        font-size: 15px;
+      }
+      .chat-header-info p {
+        font-size: 11px;
+      }
+      .chat-header-actions {
+        gap: 4px;
+      }
+      .chat-header-actions .btn-sm {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+      .messages-area {
+        padding: 12px;
+        gap: 10px;
+      }
+      .msg {
+        max-width: 88%;
+      }
+      .msg-bubble {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .chat-input-bar {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .chat-input {
+        padding: 10px 12px;
+        font-size: 16px; /* 16px prevents mobile browser zoom */
+      }
+      .send-btn {
+        padding: 0 16px;
+        font-size: 13px;
+      }
+      .modal-card {
+        padding: 18px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -249,12 +428,12 @@
       </div>
 
       <p style="font-size: 13px; color: var(--text-muted); margin: 6px 0 12px;">
-        Browse public channels or enter a channel ID directly:
+        Browse public channels or enter an invite code:
       </p>
 
       <!-- Invite Code / Direct ID Join -->
       <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-        <input type="text" id="directJoinInput" class="chat-input" placeholder="Enter Invite Code (e.g. a3f8c12b) or ID..." style="padding: 8px 12px; font-size: 13px;">
+        <input type="text" id="directJoinInput" class="chat-input" placeholder="Invite Code (e.g. a3f8c12b) or ID..." style="padding: 8px 12px; font-size: 14px;">
         <button class="btn btn-sm btn-success" onclick="joinByCodeOrId()">Join</button>
       </div>
 
@@ -271,8 +450,11 @@
 
   <!-- Main Chat Application -->
   <div id="app">
+    <!-- Backdrop for mobile drawer -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div id="sidebar" class="sidebar">
       <div class="sidebar-header">
         <div>
           <h2>ChatOps</h2>
@@ -299,12 +481,13 @@
     <!-- Chat Area -->
     <div class="chat-container">
       <div class="chat-header">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" title="Channels">☰</button>
         <div class="chat-header-info">
           <h3 id="roomTitle">Select a room</h3>
           <p id="roomDesc"></p>
         </div>
-        <div class="chat-header-actions" id="roomActions" style="display:none; align-items: center; gap: 8px;">
-          <button class="btn btn-secondary btn-sm" id="copyInviteBtn" onclick="copyInviteCode()" title="Copy Invite Code">📋 Copy Code</button>
+        <div class="chat-header-actions" id="roomActions" style="display:none;">
+          <button class="btn btn-secondary btn-sm" id="copyInviteBtn" onclick="copyInviteCode()" title="Copy Invite Code">📋 Code</button>
           <button class="btn btn-secondary btn-sm" id="inviteUserBtn" onclick="openInviteUserPrompt()">+ Invite</button>
           <button class="btn btn-secondary btn-sm" onclick="handleLeaveRoom()">Leave</button>
           <button class="btn btn-danger btn-sm" id="deleteBtn" style="display:none;" onclick="handleDeleteRoom()">Delete</button>
@@ -331,6 +514,7 @@
     let myRooms = [];
     let stompClient = null;
     let currentSubscriptions = [];
+    let subscribedRoomId = null;
     let typingTimeout = null;
 
     window.addEventListener('load', () => {
@@ -346,6 +530,21 @@
         else sendTyping();
       });
     });
+
+    /* Mobile Sidebar Controls */
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      const isOpen = sidebar.classList.toggle('open');
+      backdrop.classList.toggle('active', isOpen);
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar) sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('active');
+    }
 
     function switchAuthTab(tab) {
       document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
@@ -425,8 +624,9 @@
       localStorage.removeItem('chatops_user');
       token = null;
       currentUser = {};
+      unsubscribeFromRoom();
       if (stompClient) {
-        stompClient.disconnect();
+        try { stompClient.disconnect(); } catch (e) {}
         stompClient = null;
       }
       location.reload();
@@ -446,11 +646,14 @@
     }
 
     function connectWebSocket() {
+      if (stompClient && stompClient.connected) return;
       const socket = new SockJS('/ws');
       stompClient = Stomp.over(socket);
       stompClient.debug = null;
       stompClient.connect({ Authorization: 'Bearer ' + token }, (frame) => {
-        if (currentRoom) subscribeToRoom(currentRoom.id);
+        if (currentRoom) {
+          subscribeToRoom(currentRoom.id);
+        }
       }, (err) => {
         console.error('STOMP error:', err);
       });
@@ -490,7 +693,6 @@
           container.appendChild(div);
         });
 
-        // If current room is still valid, keep it; else select first
         if (currentRoom && myRooms.some(r => r.id === currentRoom.id)) {
           selectRoom(myRooms.find(r => r.id === currentRoom.id));
         } else if (myRooms.length > 0) {
@@ -502,7 +704,11 @@
     }
 
     async function selectRoom(room) {
+      if (!room) return;
       currentRoom = room;
+
+      closeSidebar();
+
       document.querySelectorAll('.room-item').forEach(el => el.classList.remove('active'));
       const items = Array.from(document.querySelectorAll('.room-item'));
       const activeItem = items.find(el => el.textContent.includes(room.name));
@@ -519,9 +725,7 @@
       document.getElementById('sendBtn').disabled = false;
       document.getElementById('messageInput').focus();
 
-      currentSubscriptions.forEach(sub => sub.unsubscribe());
-      currentSubscriptions = [];
-
+      unsubscribeFromRoom();
       await loadMessages(room.id);
 
       if (stompClient && stompClient.connected) {
@@ -529,18 +733,52 @@
       }
     }
 
+    function unsubscribeFromRoom() {
+      if (currentSubscriptions && currentSubscriptions.length > 0) {
+        currentSubscriptions.forEach(sub => {
+          try {
+            if (sub && typeof sub.unsubscribe === 'function') {
+              sub.unsubscribe();
+            }
+          } catch (e) {
+            console.warn('Error unsubscribing:', e);
+          }
+        });
+        currentSubscriptions = [];
+      }
+      subscribedRoomId = null;
+    }
+
     function subscribeToRoom(roomId) {
+      if (!stompClient || !stompClient.connected) return;
+      if (subscribedRoomId === roomId && currentSubscriptions.length > 0) {
+        return; // Already subscribed to this room, avoid duplicating
+      }
+
+      unsubscribeFromRoom();
+
       const msgSub = stompClient.subscribe('/topic/rooms/' + roomId, (msg) => {
-        const data = JSON.parse(msg.body);
-        appendMessage(data);
-      });
-      const typeSub = stompClient.subscribe('/topic/rooms/' + roomId + '/typing', (msg) => {
-        const data = JSON.parse(msg.body);
-        if (data.username !== currentUser.username) {
-          showTypingIndicator(data.username);
+        try {
+          const data = JSON.parse(msg.body);
+          appendMessage(data);
+        } catch (e) {
+          console.error('Failed to parse STOMP message:', e);
         }
       });
+
+      const typeSub = stompClient.subscribe('/topic/rooms/' + roomId + '/typing', (msg) => {
+        try {
+          const data = JSON.parse(msg.body);
+          if (data.username !== currentUser.username) {
+            showTypingIndicator(data.username);
+          }
+        } catch (e) {
+          console.error('Failed to parse typing payload:', e);
+        }
+      });
+
       currentSubscriptions.push(msgSub, typeSub);
+      subscribedRoomId = roomId;
     }
 
     async function loadMessages(roomId) {
@@ -565,13 +803,22 @@
     }
 
     function appendMessage(m, scroll = true) {
+      if (!m) return;
       const area = document.getElementById('messagesArea');
       if (area.querySelector('.empty-state')) area.innerHTML = '';
+
+      // Message Deduplication
+      const msgKey = m.id ? 'msg-' + m.id : (m.cursorId ? 'msg-cur-' + m.cursorId : null);
+      if (msgKey && document.getElementById(msgKey)) {
+        return; // Message already rendered in DOM, ignore duplicate
+      }
 
       const isMine = m.senderUsername === currentUser.username;
       const isSystem = m.messageType === 'SYSTEM' || m.messageType === 'JOIN' || m.messageType === 'LEAVE';
 
       const div = document.createElement('div');
+      if (msgKey) div.id = msgKey;
+
       if (isSystem) {
         div.className = 'msg system';
         div.textContent = m.content;
@@ -590,14 +837,14 @@
     function sendMessage() {
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
-      if (!text || !currentRoom || !stompClient) return;
+      if (!text || !currentRoom || !stompClient || !stompClient.connected) return;
 
       stompClient.send('/app/rooms/' + currentRoom.id + '/send', {}, JSON.stringify({ content: text }));
       input.value = '';
     }
 
     function sendTyping() {
-      if (!currentRoom || !stompClient) return;
+      if (!currentRoom || !stompClient || !stompClient.connected) return;
       stompClient.send('/app/rooms/' + currentRoom.id + '/typing', {}, JSON.stringify({}));
     }
 
@@ -693,7 +940,6 @@
       if (!input) return alert('Please enter an invite code or channel ID');
 
       try {
-        // Try joining by invite code first
         const res = await fetch('/api/rooms/join', {
           method: 'POST',
           headers: {
@@ -710,7 +956,6 @@
           return;
         }
 
-        // If numeric, try join by numeric ID
         if (/^\d+$/.test(input)) {
           await joinRoom(parseInt(input));
           return;
