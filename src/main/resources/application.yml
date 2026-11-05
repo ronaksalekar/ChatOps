@@ -4,7 +4,7 @@ spring:
 
   # ===== DataSource =====
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:chatops}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:chatops}${DB_PARAMS:}
     username: ${DB_USER:chatops}
     password: ${DB_PASSWORD:chatops_dev_password}
     driver-class-name: org.postgresql.Driver
