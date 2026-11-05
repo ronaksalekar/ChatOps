@@ -5,16 +5,29 @@ on:
     workflows: ["CI — Build & Test"]
     branches: [main]
     types: [completed]
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Trigger Production Deployment Webhook
+      - name: Validate DEPLOY_HOOK_URL Secret
         run: |
-          echo "==> Triggering production deployment hook..."
-          curl -f -X POST "${{ secrets.DEPLOY_HOOK_URL }}"
+          if [ -z "${{ secrets.DEPLOY_HOOK_URL }}" ]; then
+            echo "::error::DEPLOY_HOOK_URL secret is not set!"
+            echo "Go to GitHub Repo Settings -> Secrets and variables -> Actions -> New repository secret"
+            echo "Name: DEPLOY_HOOK_URL"
+            echo "Value: <Render Deploy Hook URL from Render Web Service Settings>"
+            exit 1
+          fi
+
+      - name: Trigger Production Deployment Webhook
+        env:
+          HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+        run: |
+          echo "==> Triggering Render production deployment hook..."
+          curl -f -X POST "$HOOK_URL"
           echo "==> Production deployment successfully triggered!"

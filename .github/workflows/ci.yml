@@ -5,9 +5,9 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
 
 env:
-  JAVA_VERSION: '25'
   MAVEN_OPTS: "-Xmx1g"
 
 jobs:
@@ -15,17 +15,17 @@ jobs:
   # Job 1: Compile + Test
   # ===================================================
   test:
-    name: Test (Java ${{ env.JAVA_VERSION }})
+    name: Test (Java 21)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '21'
           distribution: temurin
 
       - name: Cache Maven packages
@@ -35,10 +35,13 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
+
       - name: Run tests
         env:
           SPRING_PROFILES_ACTIVE: test
-        run: sh ./mvnw -q verify
+        run: ./mvnw -B verify
 
       - name: Upload test reports
         if: always()
@@ -48,7 +51,7 @@ jobs:
           path: target/surefire-reports/
 
   # ===================================================
-  # Job 2: Build Docker Image (on main only)
+  # Job 2: Build & Push Docker Image (on main only)
   # ===================================================
   build-image:
     name: Build & Push Docker Image
@@ -74,15 +77,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Downcase repository name for Docker image
+        id: repo
+        run: echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ steps.repo.outputs.image_name }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
