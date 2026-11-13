@@ -41,8 +41,7 @@ jobs:
       - name: Run tests
         env:
           SPRING_PROFILES_ACTIVE: test
-          DOCKER_API_VERSION: "1.41"
-        run: ./mvnw -B verify
+        run: ./mvnw -B -Dapi.version=1.41 verify
 
       - name: Upload test reports
         if: always()
