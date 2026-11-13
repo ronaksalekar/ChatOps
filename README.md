@@ -169,8 +169,8 @@ flowchart TD
 - **The Design**:
   - **Single-Command Orchestration**: `docker-compose.yml` spins up PostgreSQL 16 Alpine, Redis 7 Alpine, and the Spring Boot application on an isolated bridge network with automated health checks (`pg_isready`, `redis-cli ping`, `/actuator/health`).
   - **Optimized Multi-Stage `Dockerfile`**:
-    - *Stage 1 (Builder)*: Uses `eclipse-temurin:25-jdk-alpine`, pre-fetching Maven dependencies offline (`mvn dependency:go-offline`) to maximize Docker layer caching before compiling the JAR.
-    - *Stage 2 (Runtime)*: Minimal `eclipse-temurin:25-jre-alpine` runtime image, running as a dedicated non-root security user (`chatops:chatops`) with container-aware JVM ergonomics (`-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0`).
+    - *Stage 1 (Builder)*: Uses `eclipse-temurin:21-jdk-alpine`, pre-fetching Maven dependencies offline (`mvn dependency:go-offline`) to maximize Docker layer caching before compiling the JAR.
+    - *Stage 2 (Runtime)*: Minimal `eclipse-temurin:21-jre-alpine` runtime image, running as a dedicated non-root security user (`chatops:chatops`) with container-aware JVM ergonomics (`-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0`).
 - **Result**: 100% reproducible environments for developers and interviewers; lightweight production runtime images (< 250 MB) without compiler bloat.
 
 ### 4. Security Architecture: Dual JWT Lifecycle & Instant Revocation
@@ -327,8 +327,8 @@ accept-version:1.2,1.1,1.0
 
 ### Multi-Stage Docker Build
 ChatOps utilizes an optimized two-stage `Dockerfile`:
-- **Stage 1 (Builder)**: `eclipse-temurin:25-jdk-alpine` pre-fetches dependencies offline (`mvn dependency:go-offline`) to leverage Docker layer caching, then compiles the executable JAR.
-- **Stage 2 (Runtime)**: `eclipse-temurin:25-jre-alpine` packages a minimal footprint runtime image with:
+- **Stage 1 (Builder)**: `eclipse-temurin:21-jdk-alpine` pre-fetches dependencies offline (`mvn dependency:go-offline`) to leverage Docker layer caching, then compiles the executable JAR.
+- **Stage 2 (Runtime)**: `eclipse-temurin:21-jre-alpine` packages a minimal footprint runtime image with:
   - Non-root security user (`chatops:chatops`).
   - Container-aware JVM ergonomics: `-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0`.
   - Health checks querying `/actuator/health`.

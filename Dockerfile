@@ -1,6 +1,6 @@
 # ===== Multi-stage build =====
 # Stage 1: Build the JAR
-FROM eclipse-temurin:25-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
@@ -9,7 +9,7 @@ COPY src/ src/
 RUN sh ./mvnw -q package -DskipTests
 
 # Stage 2: Lean runtime image
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Create non-root user for security
